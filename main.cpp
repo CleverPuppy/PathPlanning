@@ -1,9 +1,10 @@
 #include <iostream>
-
+#include "graph.h"
 using namespace std;
 
 int main()
 {
-    cout << "Hello World!" << endl;
+    GridMap map{};
+    cout << map << endl;
     return 0;
 }
