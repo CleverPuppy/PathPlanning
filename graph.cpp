@@ -45,33 +45,6 @@ bool GridMap::mapValidCheck()
         }
     }
 
-    /*
-     * check start point and destination
-    */
-    size_t count_s = 0;
-    size_t count_d = 0;
-    for(size_t _row = 0; _row < _height; ++_row)
-    {
-        for(size_t _col = 0; _col < _width; ++_col)
-        {
-            if(_map[_row][_col] == 'S'){
-                count_s ++;
-                _start.x = _col;
-                _start.y = _row;
-            }else if(_map[_row][_col] == 'D')
-            {
-                count_d ++;
-                _destination.x = _col;
-                _start.y = _row;
-            }
-        }
-    }
-    if(count_s != 1 || count_d != 1){
-        std::cerr << "GridMap::mapValidCheck failed!" << std::endl
-                  << "'S' denotes start : " << count_s << " should only have one" << std::endl
-                  << "'D' denotes destination : " << count_d << " should only have one" << std::endl;
-        return false;
-    }
     return true;
 }
 
@@ -109,39 +82,12 @@ void GridMap::randomGenerateMap()
             int count = 0;
             while(count++ < longestObs && col < _width - 1 - gapSize)
             {
-                _map[row][col] = '#';
+                _map[row][col] = 'S';
                 col++;
             }
         }
     }
 
-    /*
-     * generate Start and Destination
-    */
-    std::random_device rd;
-    std::default_random_engine rd_engine(rd());
-    std::uniform_int_distribution<size_t> col_dist(1, _width - 2);
-    std::uniform_int_distribution<size_t> row_dist(1, _height - 2);
-    auto generateCol = std::bind(col_dist,rd_engine);
-    auto generateRow = std::bind(row_dist,rd_engine);
-    auto s_row = generateRow();
-    auto d_row = generateRow();
-    auto s_col = generateCol();
-    auto d_col = generateCol();
-    while(_map[s_row][s_col] != '.'){
-        s_row = generateRow();
-        s_col = generateCol();
-    }
-    _map[s_row][s_col] = 'S';
-    _start.x = s_col;
-    _start.y = s_row;
-    while(_map[d_row][d_col] != '.'){
-        d_row = generateRow();
-        d_col = generateCol();
-    }
-    _map[d_row][d_col] = 'D';
-    _destination.x = d_col;
-    _destination.y = d_row;
 }
 
 std::ostream &operator<<(std::ostream &os, const GridMap &grid_map)
@@ -156,4 +102,9 @@ std::ostream &operator<<(std::ostream &os, const GridMap &grid_map)
         os << std::endl;
     }
     return os;
+}
+
+std::ostream &operator <<(std::ostream &os, const vec2d &v2d)
+{
+    os << "[" << v2d.x << ","<< v2d.y << "]";
 }
