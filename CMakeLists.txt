@@ -22,4 +22,4 @@ add_executable(${PROJECT_NAME} "main.cpp"
                                "maprender.cpp"
                                "glad.c")
 
-target_link_libraries(${PROJECT_NAME} glfw GL)
+target_link_libraries(${PROJECT_NAME} glfw GL GLU)

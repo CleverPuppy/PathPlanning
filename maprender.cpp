@@ -27,6 +27,9 @@ MapRender::MapRender()
 //        std::cerr << "Failed to initialize GLAD" << std::endl;
 //        exit(-1);
 //    }
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0.0,800.0,0.0,600.0);
     glViewport(0,0,800,600);
 }
 
@@ -60,24 +63,65 @@ void MapRender::renderStaticMap(const GridMap &static_map)
     glClearColor(1.f,1.f,1.f,1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glColor3f(0.f,1.f,0.f);
-    glPointSize(10);
-    glBegin(GL_POINTS);
-    glVertex2f(-0.5f,0.f);
-    glVertex2f(0.5f,0.5f);
-    glEnd();
-
+    /*
+     * render points
+    */
+    int gap = 25;
     glColor3f(1.0f,0.0f,0.0f);
-    glPointSize(20);
+    glPointSize(4);
     glBegin(GL_POINTS);
     for(size_t i = 0; i < static_map._width; ++i)
     {
         for(size_t j = 0; j < static_map._height; ++j)
         {
-            glVertex2i(i , j);
+            glVertex2i(gap + i * gap ,gap + j * gap);
         }
     }
     glEnd();
+
+    /*
+     * render obstacles
+    */
+    glColor3f(0.0f,0.0f,0.0f);
+    glPolygonMode(GL_POINT,GL_FILL);
+    for(size_t i = 0; i < static_map._width; ++i)
+    {
+        for(size_t j = 0; j < static_map._height; ++j)
+        {
+            if(static_map._map[i][j] == '#'){
+                int cx = (i + 1) * gap;
+                int cy = (j + 1) * gap;
+                glBegin(GL_POLYGON);
+                glVertex2f(cx - gap / 2.f, cy - gap / 2.f);
+                glVertex2f(cx - gap / 2.f, cy + gap / 2.f);
+                glVertex2f(cx + gap / 2.f, cy + gap / 2.f);
+                glVertex2f(cx + gap / 2.f, cy - gap / 2.f);
+                glEnd();
+            }
+        }
+    }
+
+    /*
+     * render stock
+    */
+    glColor3f(0.0f,1.0f,0.0f);
+    glPolygonMode(GL_POINT,GL_FILL);
+    for(size_t i = 0; i < static_map._width; ++i)
+    {
+        for(size_t j = 0; j < static_map._height; ++j)
+        {
+            if(static_map._map[i][j] == 'S'){
+                int cx = (i + 1) * gap;
+                int cy = (j + 1) * gap;
+                glBegin(GL_POLYGON);
+                glVertex2f(cx - gap / 3.f, cy - gap / 3.f);
+                glVertex2f(cx - gap / 3.f, cy + gap / 3.f);
+                glVertex2f(cx + gap / 3.f, cy + gap / 3.f);
+                glVertex2f(cx + gap / 3.f, cy - gap / 3.f);
+                glEnd();
+            }
+        }
+    }
     glFinish();
 }
 
