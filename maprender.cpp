@@ -58,15 +58,11 @@ void MapRender::processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window,true);
 }
 
-void MapRender::renderStaticMap(const GridMap &static_map)
+void MapRender::render(const GridMap &static_map)
 {
-    glClearColor(1.f,1.f,1.f,1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
     /*
      * render points
     */
-    int gap = 25;
     glColor3f(1.0f,0.0f,0.0f);
     glPointSize(4);
     glBegin(GL_POINTS);
@@ -122,6 +118,47 @@ void MapRender::renderStaticMap(const GridMap &static_map)
             }
         }
     }
+}
+
+void MapRender::render(const MultiAGVManager &manager)
+{
+    /*
+     * clear window
+    */
+    glClearColor(1.0f,1.0f,1.0f,1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    /*
+     * render static map
+    */
+    render(manager.static_map);
+    /*
+     * render all robots
+    */
+    glColor3f(0.0f,0.0f,1.0f);
+    glPolygonMode(GL_POINT, GL_FILL);
+
+    for(const auto& robot : manager._robots)
+    {
+        render(robot);
+    }
+
     glFinish();
 }
 
+inline void MapRender::render(const GroundAGV &rb)
+{
+    int cx = gap + rb._current_location.x * gap;
+    int cy = gap + rb._current_location.y * gap;
+    glBegin(GL_POLYGON);
+    glVertex2f(cx - gap / 3.f, cy - gap / 3.f);
+    glVertex2f(cx - gap / 3.f, cy + gap / 3.f);
+    glVertex2f(cx + gap / 3.f, cy + gap / 3.f);
+    glVertex2f(cx + gap / 3.f, cy - gap / 3.f);
+    glEnd();
+
+    glLineWidth(5);
+    glBegin(GL_LINE_STRIP);
+    glVertex2i(cx,cy);
+    glVertex2i(gap + rb._target_location.x * gap, gap + rb._target_location.y * gap);
+    glEnd();
+}

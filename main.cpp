@@ -14,8 +14,11 @@ int main()
     MultiAGVManager manager{std::move(map)};
 
     MapRender render{};
-    render.renderStaticMap(manager.static_map);
+    render.render(manager);
     render.updateWindow();
     manager.addRobot(1, {1,1}, {10,10});
+    manager.addRobot(2, {1,10}, {10,11});
+    render.render(manager);
+    render.updateWindow();
     return 0;
 }

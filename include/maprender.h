@@ -10,12 +10,15 @@
 #include <thread>
 
 #include "graph.h"
+#include "robot.h"
 
 class MapRender
 {
 private:
     GLFWwindow *window;
     std::thread render_thread;
+
+    static const int gap = 25;
 public:
     MapRender();
     ~MapRender();
@@ -34,7 +37,11 @@ public:
     /*
      * rendering functions
     */
-    static void renderStaticMap(const GridMap& static_map);
+public:
+    static void render(const MultiAGVManager& manager);
+private:
+    static void render(const GridMap& static_map);
+    static void render(const GroundAGV& rb);
 };
 
 #endif // MAPRENDER_H
