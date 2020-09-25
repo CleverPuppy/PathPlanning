@@ -43,6 +43,7 @@ MapRender::~MapRender()
 
 void MapRender::updateWindow()
 {
+    glfwPollEvents();
     glfwSwapBuffers(window);
 }
 
@@ -143,6 +144,19 @@ void MapRender::render(const MultiAGVManager &manager)
     }
 
     glFinish();
+}
+
+void MapRender::drwaRect(unsigned int x, unsigned int y)
+{
+    glColor4f(0.f,0.f,0.f,0.4f);
+    auto cx = gap + x * gap;
+    auto cy = gap + y * gap;
+    glBegin(GL_POLYGON);
+    glVertex2f(cx - gap / 3.f, cy - gap / 3.f);
+    glVertex2f(cx - gap / 3.f, cy + gap / 3.f);
+    glVertex2f(cx + gap / 3.f, cy + gap / 3.f);
+    glVertex2f(cx + gap / 3.f, cy - gap / 3.f);
+    glEnd();
 }
 
 inline void MapRender::render(const GroundAGV &rb)

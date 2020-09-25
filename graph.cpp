@@ -18,8 +18,6 @@ bool GridMap::mapValidCheck()
     /*
      * check obstacles
     */
-    _height = _map.size();
-    _width = _map[0].size();
     for(size_t _row : {0UL, _height - 1})
     {
         for(size_t _col = 0; _col < _width; ++_col)
@@ -88,6 +86,16 @@ void GridMap::randomGenerateMap()
         }
     }
 
+}
+
+inline size_t GridMap::toID(size_t row, size_t col) const
+{
+    return row * _width + col;
+}
+
+inline std::pair<size_t, size_t> GridMap::toXY(size_t id) const
+{
+    return {id / _width, id % _width};
 }
 
 std::ostream &operator<<(std::ostream &os, const GridMap &grid_map)

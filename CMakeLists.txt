@@ -20,6 +20,7 @@ add_executable(${PROJECT_NAME} "main.cpp"
                                "graph.cpp"
                                "robot.cpp"
                                "maprender.cpp"
-                               "glad.c")
+                               "glad.c"
+                               "pathplan.cpp")
 
 target_link_libraries(${PROJECT_NAME} glfw GL GLU)

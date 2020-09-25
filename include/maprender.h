@@ -39,6 +39,7 @@ public:
     */
 public:
     static void render(const MultiAGVManager& manager);
+    static void drwaRect(unsigned int x, unsigned int y);
 private:
     static void render(const GridMap& static_map);
     static void render(const GroundAGV& rb);
