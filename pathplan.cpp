@@ -79,3 +79,32 @@ std::vector<unsigned int> AStar(const GridMap &map, GroundAGV &rb, MapRender* re
     }
     return {};
 }
+
+SRPL_QL::SRPL_QL(size_t map_width, size_t map_height, float learning_rate, float gamma, float epsilon)
+    : QLBase(map_width * map_height, 4, learning_rate, gamma, epsilon),
+      staticMap(map_width, map_height)
+{
+
+}
+
+void SRPL_QL::run(unsigned int episode_times)
+{
+    auto& static_map = staticMap._map;
+    auto width = staticMap._width;
+    auto height = staticMap._height;
+    for(auto i = 0UL; i < width; ++i)
+    {
+        for(auto j = 0UL; j < height; ++j)
+        {
+            // TODO SELECT ALL POSITIONS
+        }
+    }
+    for(unsigned int i = 0; i < episode_times; ++i)
+    {
+        /*
+         * random select a start location and a destination location
+        */
+
+    }
+
+}
