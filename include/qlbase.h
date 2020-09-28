@@ -8,19 +8,17 @@
 */
 class QLBase
 {
-private:
+public:
     /*
      * qlearning parameters
     */
     float learning_rate;
     float gamma;
     float epsilon;
-
     /*
      * qlearning data
      */
     std::vector<std::vector<float>> qtable;
-public:
     QLBase(size_t state_dim,
            size_t action_dim,
            float learning_rate,

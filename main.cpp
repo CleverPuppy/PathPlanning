@@ -43,5 +43,7 @@ int main()
         sleep(1);
     }
 
+    SRPL_QL singleRobotQL(20,20,0.2,0.9,0.9);
+    singleRobotQL.run(100);
     return 0;
 }

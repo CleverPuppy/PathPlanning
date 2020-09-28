@@ -4,6 +4,8 @@
 #include <cmath>
 #include <algorithm>
 #include <list>
+#include <random>
+#include <functional>
 
 struct AStarNode{
     size_t x;
@@ -80,8 +82,44 @@ std::vector<unsigned int> AStar(const GridMap &map, GroundAGV &rb, MapRender* re
     return {};
 }
 
+inline size_t SRPL_QL::getRelativeDirection(size_t x, size_t y, size_t goal_x, size_t goal_y)
+{
+    if(x == goal_x){
+        if(y < goal_y){
+            return 0;
+        }
+        if(y > goal_y){
+            return 1;
+        }
+    }
+    if(y == goal_y){
+        if(x < goal_x){
+            return 2;
+        }
+        if(x > goal_x){
+            return 3;
+        }
+    }
+    if(x < goal_x){
+        if(y < goal_y){
+            return 4;
+        }
+        if(y > goal_y){
+            return 5;
+        }
+    }else{
+        if(y < goal_y){
+            return 6;
+        }
+        if(y > goal_y){
+            return 7;
+        }
+    }
+    return 8;
+}
+
 SRPL_QL::SRPL_QL(size_t map_width, size_t map_height, float learning_rate, float gamma, float epsilon)
-    : QLBase(map_width * map_height, 4, learning_rate, gamma, epsilon),
+    : QLBase(map_width * map_height * 9, 4, learning_rate, gamma, epsilon),
       staticMap(map_width, map_height)
 {
 
@@ -92,19 +130,104 @@ void SRPL_QL::run(unsigned int episode_times)
     auto& static_map = staticMap._map;
     auto width = staticMap._width;
     auto height = staticMap._height;
+    auto state_size = qtable.size();
+    auto action_size = qtable.front().size();
+    std::vector<size_t> vCandidates;        // 候选集
     for(auto i = 0UL; i < width; ++i)
     {
         for(auto j = 0UL; j < height; ++j)
         {
-            // TODO SELECT ALL POSITIONS
+            // 假设机器人都从货架左边取货
+            if(static_map[i][j] == 'S'){
+                vCandidates.emplace_back(j * width + i - 1);
+            }
         }
     }
+
+    /*
+     * init random module
+    */
+    std::random_device rd;
+    std::default_random_engine engine(rd());
+    std::uniform_int_distribution<size_t> rd_distribution(0,vCandidates.size() - 1);
+    std::uniform_real_distribution<float> epsilon_prob(0.0f,1.0f);
+    std::uniform_int_distribution<size_t> action_dist(0, action_size - 1);
+    auto dice = std::bind(rd_distribution, engine);
+    auto robot_location = vCandidates[dice()];
+    size_t destination;
+    size_t state;
     for(unsigned int i = 0; i < episode_times; ++i)
     {
         /*
-         * random select a start location and a destination location
+         * random select a destination location
         */
+        destination = vCandidates[dice()];
+        size_t goal_x = destination % width;
+        size_t goal_y = destination / width;
+        size_t x = robot_location % width;
+        size_t y = robot_location / width;
 
+        bool episodeShouldEnd = false;
+        while(!episodeShouldEnd)   // !!! 确保候选集中的节点之间能够互相连通
+        {
+            /*
+             * storage current state info
+            */
+            size_t manh_distance = (x > goal_x ? x - goal_x : goal_x - x) + (y > goal_y ? y - goal_y : goal_y - y);
+            state = (y * width + x) * 9 + getRelativeDirection(x,y,goal_x,goal_y);
+            /*
+             * select action. using epsilon greedy
+            */
+            size_t best_action = 0;
+            float best_reward = -__FLT_MAX__;
+            // using epsilon greedy
+            if(epsilon_prob(engine) < epsilon){
+                for(auto action = 0; action < action_size; ++action)
+                {
+                    if(qtable[state][action] > best_reward){
+                        best_action = action;
+                        best_reward = qtable[state][action];
+                    }
+                }
+            }else{
+                best_action = action_dist(engine);
+            }
+
+            /*
+             * determine next state or if epsode finished{ reach obstacle or destination}
+            */
+            switch (best_action) {
+            case 0: // UP
+                y -= 1;
+                break;
+            case 1: // DOWN
+                y += 1;
+                break;
+            case 2: // LEFT
+                x -= 1;
+                break;
+            case 3: // RIGHT;
+                x += 1;
+                break;
+            }
+            float reward = -1.f;
+            if(static_map[x][y] == '#'){
+                reward = -5.f;
+                episodeShouldEnd = true;
+            }else if(x == goal_x && y == goal_y){
+                reward = 10.f;
+                episodeShouldEnd = true;
+            }else{
+                reward = long((x > goal_x ? x - goal_x : goal_x - x) + (y > goal_y ? y - goal_y : goal_y - y)) - (long)manh_distance;
+            }
+            /*
+             * update state
+            */
+            size_t nextState = (y * width + x) * 9 + getRelativeDirection(x,y,goal_x,goal_y);
+            float _loss;
+            update(state, best_action,reward,nextState, _loss);
+            state = nextState;
+        }
     }
 
 }

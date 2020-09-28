@@ -24,6 +24,8 @@ class SRPL_QL : public QLBase
 {
 private:
     GridMap staticMap;
+
+    size_t getRelativeDirection(size_t x, size_t y, size_t goal_x, size_t goal_y);
 public:
     SRPL_QL(size_t map_width, size_t map_height,
             float learning_rate,
