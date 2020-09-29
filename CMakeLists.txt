@@ -22,6 +22,7 @@ add_executable(${PROJECT_NAME} "main.cpp"
                                "maprender.cpp"
                                "glad.c"
                                "pathplan.cpp"
-                               "qlbase.cpp")
+                               "qlbase.cpp"
+                               "examples.cpp")
 
 target_link_libraries(${PROJECT_NAME} glfw GL GLU)
