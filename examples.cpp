@@ -38,6 +38,8 @@ void AStarTest()
 
 void SingleRobotRLPathPlanTest()
 {
-    SRPL_QL singleRobotQL(20,20,0.2,0.9,0.9);
-    singleRobotQL.run(100);
+    MapRender render;
+    SRPL_QL singleRobotQL(20,20,0.9f,0.9f,0.3f);
+    singleRobotQL.run(100000,&render);
+    singleRobotQL.run(100, &render);
 }

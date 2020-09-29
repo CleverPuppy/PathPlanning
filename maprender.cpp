@@ -61,6 +61,7 @@ void MapRender::processInput(GLFWwindow *window)
 
 void MapRender::render(const GridMap &static_map)
 {
+    glClear(GL_COLOR_BUFFER_BIT);
     /*
      * render points
     */

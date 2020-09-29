@@ -22,11 +22,10 @@ std::vector<unsigned int> AStar(const GridMap& map, GroundAGV& rb, MapRender* re
 */
 class SRPL_QL : public QLBase
 {
-private:
+public:
     GridMap staticMap;
 
     size_t getRelativeDirection(size_t x, size_t y, size_t goal_x, size_t goal_y);
-public:
     SRPL_QL(size_t map_width, size_t map_height,
             float learning_rate,
             float gamma,
@@ -34,6 +33,6 @@ public:
     /*
      * run  Episodes
     */
-    void run(unsigned int episode_times);
+    void run(unsigned int episode_times, MapRender* render);
 };
 #endif // PATHPLAN_H

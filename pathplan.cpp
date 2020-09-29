@@ -6,6 +6,7 @@
 #include <list>
 #include <random>
 #include <functional>
+#include <unistd.h>
 
 struct AStarNode{
     size_t x;
@@ -125,7 +126,7 @@ SRPL_QL::SRPL_QL(size_t map_width, size_t map_height, float learning_rate, float
 
 }
 
-void SRPL_QL::run(unsigned int episode_times)
+void SRPL_QL::run(unsigned int episode_times, MapRender* render)
 {
     auto& static_map = staticMap._map;
     auto width = staticMap._width;
@@ -143,7 +144,6 @@ void SRPL_QL::run(unsigned int episode_times)
             }
         }
     }
-
     /*
      * init random module
     */
@@ -154,25 +154,30 @@ void SRPL_QL::run(unsigned int episode_times)
     std::uniform_int_distribution<size_t> action_dist(0, action_size - 1);
     auto dice = std::bind(rd_distribution, engine);
     auto robot_location = vCandidates[dice()];
-    size_t destination;
+    size_t destination = vCandidates[dice()];
     size_t state;
+    size_t nextState;
     for(unsigned int i = 0; i < episode_times; ++i)
     {
         /*
          * random select a destination location
         */
-        destination = vCandidates[dice()];
+//        destination = vCandidates[dice()];
         size_t goal_x = destination % width;
         size_t goal_y = destination / width;
         size_t x = robot_location % width;
         size_t y = robot_location / width;
-
         bool episodeShouldEnd = false;
+        float average_loss = 0.0f;
+        size_t count = 0;
         while(!episodeShouldEnd)   // !!! 确保候选集中的节点之间能够互相连通
         {
+            count ++;
             /*
              * storage current state info
             */
+            auto x_backup = x;
+            auto y_backup = y;
             size_t manh_distance = (x > goal_x ? x - goal_x : goal_x - x) + (y > goal_y ? y - goal_y : goal_y - y);
             state = (y * width + x) * 9 + getRelativeDirection(x,y,goal_x,goal_y);
             /*
@@ -193,6 +198,14 @@ void SRPL_QL::run(unsigned int episode_times)
                 best_action = action_dist(engine);
             }
 
+            if(render != nullptr){
+                GroundAGV agv(0,{x,y},{goal_x,goal_y});
+                render->render(staticMap);
+                render->render(agv);
+                render->updateWindow();
+                sleep(0.1);
+            }
+
             /*
              * determine next state or if epsode finished{ reach obstacle or destination}
             */
@@ -211,23 +224,29 @@ void SRPL_QL::run(unsigned int episode_times)
                 break;
             }
             float reward = -1.f;
-            if(static_map[x][y] == '#'){
-                reward = -5.f;
-                episodeShouldEnd = true;
-            }else if(x == goal_x && y == goal_y){
+            if(x == goal_x && y == goal_y){
                 reward = 10.f;
                 episodeShouldEnd = true;
+                nextState = (y * width + x) * 9 + getRelativeDirection(x,y,goal_x,goal_y);
+            }else if(static_map[x][y] == '.'){
+                reward = (long)manh_distance - long((x > goal_x ? x - goal_x : goal_x - x) + (y > goal_y ? y - goal_y : goal_y - y));
+                nextState = (y * width + x) * 9 + getRelativeDirection(x,y,goal_x,goal_y);
             }else{
-                reward = long((x > goal_x ? x - goal_x : goal_x - x) + (y > goal_y ? y - goal_y : goal_y - y)) - (long)manh_distance;
+                reward = -5.f;
+                nextState = state;
+                x = x_backup;
+                y = y_backup;
             }
             /*
              * update state
             */
-            size_t nextState = (y * width + x) * 9 + getRelativeDirection(x,y,goal_x,goal_y);
             float _loss;
             update(state, best_action,reward,nextState, _loss);
+            average_loss += _loss;
             state = nextState;
         }
+        average_loss /= count;
+        std::cout << average_loss << std::endl;
     }
 
 }
